@@ -102,23 +102,19 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
 
 ### My Approach
 
-```
- 1. Define the problem     →  PRD, user stories, competitive analysis
- 2. Design the system      →  Schema, architecture, design system docs
- 3. Build with AI agents   →  Claude Code multi-agent orchestration
- 4. Ship fast, iterate     →  Vercel previews, Supabase migrations
-```
+> **1.** Define the problem → PRD, user stories, competitive analysis
+>
+> **2.** Design the system → Schema, architecture, design system
+>
+> **3.** Build with AI agents → Claude Code multi-agent orchestration
+>
+> **4.** Ship fast, iterate → Vercel previews, Supabase migrations
 
-> Every project gets a PRD, database schema, design system, and agent configuration before a single component is built.
+Every project gets a PRD, database schema, design system, and agent configuration before a single component is built.
 
 ---
 
 ### GitHub Stats
-
-<p align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=kilincfaruk&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&bg_color=0d1117" alt="GitHub Stats" height="170" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=kilincfaruk&layout=compact&theme=tokyonight&hide_border=true&bg_color=0d1117&langs_count=6" alt="Top Languages" height="170" />
-</p>
 
 <p align="center">
   <img src="https://github-readme-streak-stats.herokuapp.com/?user=kilincfaruk&theme=tokyonight&hide_border=true&background=0d1117" alt="GitHub Streak" />
