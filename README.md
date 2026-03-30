@@ -67,33 +67,33 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
       <p><code>Next.js 14</code> <code>Shopify Storefront API</code> <code>Vercel</code></p>
     </td>
     <td width="50%">
-      <h4>✈️ Wandr</h4>
-      <p>Tinder-style travel planning app with smart place discovery</p>
+      <h4>🔒 Stealth Project</h4>
+      <p>AI-powered travel planning mobile app — in development</p>
       <p><code>React Native</code> <code>Next.js</code> <code>Supabase</code> <code>Google Places API</code></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <h4>💎 fffc (forge)</h4>
-      <p>B2B jewelry marketplace — "Jewelry's Printify"</p>
+      <h4>💎 B2B Jewelry Marketplace</h4>
+      <p>Printify-style platform for jewelry — design with AI, we handle production & fulfillment</p>
       <p><code>Next.js 14</code> <code>Supabase</code> <code>fal.ai</code> <code>DDD</code></p>
     </td>
     <td width="50%">
-      <h4>🍽️ Servefy</h4>
-      <p>QR menu + restaurant order management SaaS</p>
+      <h4>🔒 Stealth Project</h4>
+      <p>SaaS platform for restaurant operations — in development</p>
       <p><code>Next.js 14</code> <code>Supabase</code> <code>PWA</code></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <h4>🔤 KriptoGram</h4>
-      <p>Turkish cryptogram mobile game with adaptive difficulty</p>
-      <p><code>Expo</code> <code>React Native</code> <code>RevenueCat</code></p>
+      <h4>🤖 Medusa AI Tools</h4>
+      <p>AI-powered product image generation tools for a jewelry brand</p>
+      <p><code>fal.ai</code> <code>Anthropic API</code> <code>Prompt Engineering</code></p>
     </td>
     <td width="50%">
-      <h4>🛠️ Medusa Atelier</h4>
-      <p>Handmade silver jewelry brand, Ankara</p>
-      <p><code>Founder</code> <code>Product Design</code> <code>E-commerce</code></p>
+      <h4>⚡ More Coming Soon</h4>
+      <p>Always building. Always shipping.</p>
+      <p><code>Next.js</code> <code>Supabase</code> <code>Claude Code</code></p>
     </td>
   </tr>
 </table>
@@ -111,14 +111,6 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
 > **4.** Ship fast, iterate → Vercel previews, Supabase migrations
 
 Every project gets a PRD, database schema, design system, and agent configuration before a single component is built.
-
----
-
-### GitHub Stats
-
-<p align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=kilincfaruk&theme=tokyonight&hide_border=true&background=0d1117" alt="GitHub Streak" />
-</p>
 
 ---
 
