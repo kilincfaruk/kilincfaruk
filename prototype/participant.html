@@ -33,11 +33,11 @@
     <h1>🔦 Işık Şovuna Katıl</h1>
     <p>Butona bas, kamera iznini ver. Telefonun sahnedeki komutlarla senkron yanıp sönecek.</p>
     <button id="joinBtn">Katıl</button>
-    <p id="gateNote" style="font-size:12px;color:#8b8b98"></p>
   </div>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { fxState } from './engine.js';
 
 const SUPABASE_URL = 'https://fwbtoktcjtfxairxdnqk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6IYn_AFX91VcX5tq2b_QoA_iBZMrKD9';
@@ -48,9 +48,12 @@ const gate = document.getElementById('gate');
 const dot = document.getElementById('dot');
 const statusText = document.getElementById('statusText');
 
-// --- Bu telefonun kimliği: sabit rastgele faz (0..1). Dalga/sıra efektlerinin sırrı bu. ---
+// --- Bu telefonun kimliği: sabit rastgele faz (0..1). Dalga/sıra efektlerinin sırrı. ---
 let phase = Math.random();
-try { const s = localStorage.getItem('ph'); if (s) phase = +s; else localStorage.setItem('ph', phase); } catch(e){}
+try {
+  const s = localStorage.getItem('ph');
+  if (s !== null && !Number.isNaN(+s)) phase = +s; else localStorage.setItem('ph', phase);
+} catch (e) {}
 
 let track = null, torchSupported = false, curTorch = false, joined = false;
 let effect = { action: 'off' };
@@ -58,7 +61,10 @@ let effect = { action: 'off' };
 // ---- Realtime ----
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const channel = sb.channel(CHANNEL, { config: { presence: { key: Math.random().toString(36).slice(2) } } });
-channel.on('broadcast', { event: 'cmd' }, ({ payload }) => { effect = payload || { action:'off' }; });
+channel.on('broadcast', { event: 'cmd' }, ({ payload }) => {
+  effect = payload || { action: 'off' };
+  if (joined) statusText.textContent = 'efekt: ' + (effect.action || '—');
+});
 channel.subscribe((s) => {
   const online = s === 'SUBSCRIBED';
   dot.classList.toggle('on', online);
@@ -66,60 +72,20 @@ channel.subscribe((s) => {
   if (online) channel.track({ t: Date.now() });
 });
 
-// ---- Renk yardımcıları ----
-function hexRgb(h){ h=h.replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join('');
-  return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) }; }
-function paint(hex, v){ const {r,g,b}=hexRgb(hex); const k=Math.max(0,Math.min(1,v));
-  stage.style.background = `rgb(${r*k|0},${g*k|0},${b*k|0})`; }
-function paintHSL(h, l){ stage.style.background = `hsl(${h|0} 100% ${Math.round(Math.max(0,Math.min(1,l))*50)}%)`; }
-function setTorch(v){ if(v===curTorch) return; curTorch=v;
-  if(track && torchSupported){ track.applyConstraints({advanced:[{torch:v}]}).catch(()=>{}); } }
-
-// ---- Animasyon motoru: her kare, efekt + faz + ortak saatten kendi durumunu hesaplar ----
-function frame(){
-  const now = Date.now();
-  const t = (now - (effect.startAt || now)) / 1000;   // efekt başından beri saniye
-  const color = effect.color || '#ffffff';
-  let torch = false;
-  switch (effect.action) {
-    case 'color':  paint(color, 1); break;
-    case 'flash':  paint('#ffffff', 1); torch = true; break;
-    case 'off':    paint('#000000', 0); break;
-
-    case 'wave': {  // crowd boyunca gezen dalga — faz = konum
-      const speed = effect.speed || 0.4;
-      const v = 0.5 + 0.5 * Math.cos(2*Math.PI*(t*speed - phase));
-      paint(color, v*v); torch = effect.torch && v > 0.75; break;
-    }
-    case 'twinkle': { // her telefon farklı anda parlar (yıldız serpme)
-      const rate = effect.rate || 1.6;
-      const on = Math.sin(2*Math.PI*(t*rate*(0.6+phase*0.9)) + phase*97) > 0.72;
-      paint(color, on ? 1 : 0); break;
-    }
-    case 'rainbow': { // her telefonun rengi fazına göre → crowd gökkuşağı
-      const speed = effect.speed || 0.08;
-      paintHSL(((phase + t*speed) % 1) * 360, 1); break;
-    }
-    case 'chase': { // faz sırasına göre gruplar tek tek yanar
-      const groups = effect.groups || 5, bpm = effect.bpm || 120;
-      const myGroup = Math.min(groups-1, Math.floor(phase*groups));
-      const active = Math.floor(t*bpm/60) % groups;
-      const on = active === myGroup;
-      paint(color, on ? 1 : 0.02); torch = effect.torch && on; break;
-    }
-    case 'pulse': { // hep birlikte nefes alma
-      const bpm = effect.bpm || 60;
-      const v = 0.5 + 0.5*Math.sin(2*Math.PI*t*bpm/60);
-      paint(color, v); torch = effect.torch && v > 0.7; break;
-    }
-    case 'strobe': { // hep birlikte hızlı yanıp sönme
-      const hz = effect.hz || 8;
-      const on = (Math.floor(t*hz*2) % 2) === 0;
-      paint(color, on ? 1 : 0); torch = effect.torch && on; break;
-    }
-    default: paint('#000000', 0);
+// ---- Flaş ----
+function setTorch(v) {
+  if (v === curTorch) return;
+  curTorch = v;
+  if (track && torchSupported) {
+    track.applyConstraints({ advanced: [{ torch: v }] }).catch(() => {});
   }
-  setTorch(!!torch);
+}
+
+// ---- Animasyon: ortak motor her karede efekt+faz+saatten durumu hesaplar ----
+function frame() {
+  const st = fxState(effect, phase, Date.now());
+  stage.style.background = st.css;
+  setTorch(!!st.torch);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -129,8 +95,8 @@ document.getElementById('joinBtn').onclick = async () => {
   joined = true;
   gate.classList.add('hidden');
   statusText.textContent = 'bağlı — komut bekleniyor';
-  try { await navigator.wakeLock.request('screen'); } catch(e){}
-  try { await document.documentElement.requestFullscreen(); } catch(e){}
+  try { await navigator.wakeLock.request('screen'); } catch (e) {}
+  try { await document.documentElement.requestFullscreen(); } catch (e) {}
   if (!window.isSecureContext) { statusText.textContent = 'HTTPS gerekli — flaş yok, ekranla katılıyorsun'; return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -138,8 +104,17 @@ document.getElementById('joinBtn').onclick = async () => {
     const caps = track.getCapabilities ? track.getCapabilities() : {};
     torchSupported = !!caps.torch;
     statusText.textContent = torchSupported ? 'flaş hazır ✔ komut bekleniyor' : 'flaş yok; ekranla katılıyorsun';
-  } catch(e) { statusText.textContent = 'kamera reddedildi; ekranla katılıyorsun'; }
+  } catch (e) {
+    statusText.textContent = 'kamera reddedildi; ekranla katılıyorsun';
+  }
 };
+
+// Wake lock görünürlük değişince düşebilir — geri al
+document.addEventListener('visibilitychange', async () => {
+  if (joined && document.visibilityState === 'visible') {
+    try { await navigator.wakeLock.request('screen'); } catch (e) {}
+  }
+});
 </script>
 </body>
 </html>
