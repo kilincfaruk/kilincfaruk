@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Işık Şovu — Operatör</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100dvh; background: #0b0b0f; color: #e9e9ee; padding: 18px;
+    font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  h1 { font-size: 19px; margin: 0; }
+  #count { font-size: 13px; font-family: ui-monospace, monospace; color: #9aa;
+           background:#16161d; border:1px solid #26262f; padding:6px 10px; border-radius:10px; }
+  #count b { color:#4ade80; font-size:15px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button {
+    appearance: none; border: 0; border-radius: 14px; padding: 22px 12px;
+    font-size: 17px; font-weight: 700; color: #fff; background: #2b2b36;
+    transition: transform .05s; touch-action: manipulation;
+  }
+  button:active { transform: scale(.96); }
+  .b-flash { background:#c9a227; color:#000; } .b-off { background:#3a3a46; }
+  .b-strobe { background:#7c3aed; } .b-red{background:#dc2626;} .b-green{background:#16a34a;}
+  .b-blue{background:#2563eb;} .b-white{background:#e5e7eb;color:#000;}
+  .section { font-size:12px; color:#8b8b98; text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+  #conn { font-size:12px; font-family:ui-monospace,monospace; color:#9aa; }
+  a.qr { color:#6ea8fe; font-size:13px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🎛️ Işık Şovu — Operatör</h1>
+    <div id="count">Bağlı telefon: <b id="n">0</b></div>
+  </header>
+  <div id="conn">bağlanılıyor…</div>
+
+  <div class="section">Flaş</div>
+  <div class="grid">
+    <button class="b-flash" data-cmd='{"action":"flash"}'>Flaş AÇ 🔦</button>
+    <button class="b-off"   data-cmd='{"action":"off"}'>KAPAT</button>
+  </div>
+
+  <div class="section">Renk (ekran)</div>
+  <div class="grid">
+    <button class="b-red"   data-cmd='{"action":"color","value":"#ff0000"}'>Kırmızı</button>
+    <button class="b-green" data-cmd='{"action":"color","value":"#00ff00"}'>Yeşil</button>
+    <button class="b-blue"  data-cmd='{"action":"color","value":"#0000ff"}'>Mavi</button>
+    <button class="b-white" data-cmd='{"action":"color","value":"#ffffff"}'>Beyaz</button>
+  </div>
+
+  <div class="section">Efekt</div>
+  <div class="grid">
+    <button class="b-strobe" data-cmd='{"action":"strobe","value":"#ffffff","hz":8,"torch":true}'>Strobe (flaş+ekran)</button>
+    <button class="b-strobe" data-cmd='{"action":"strobe","value":"#00e5ff","hz":6}'>Strobe (mavi ekran)</button>
+  </div>
+
+  <p><a class="qr" id="plink" href="participant.html" target="_blank">📱 Katılımcı sayfası linki (telefonlarda aç)</a></p>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://fwbtoktcjtfxairxdnqk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6IYn_AFX91VcX5tq2b_QoA_iBZMrKD9';
+const CHANNEL = 'show';
+
+const conn = document.getElementById('conn');
+const nEl = document.getElementById('n');
+let ready = false;
+
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const channel = sb.channel(CHANNEL, { config: { presence: { key: 'operator' } } });
+
+channel.on('presence', { event: 'sync' }, () => {
+  const state = channel.presenceState();
+  // operatör kendini sayma
+  const n = Object.keys(state).filter(k => k !== 'operator').length;
+  nEl.textContent = n;
+});
+
+channel.subscribe((s) => {
+  ready = s === 'SUBSCRIBED';
+  conn.textContent = ready ? '● bağlı — komut göndermeye hazır' : ('durum: ' + s);
+  conn.style.color = ready ? '#4ade80' : '#f87171';
+  if (ready) channel.track({ role: 'operator' });
+});
+
+function send(cmd) {
+  if (!ready) return;
+  channel.send({ type: 'broadcast', event: 'cmd', payload: cmd });
+}
+
+document.querySelectorAll('button[data-cmd]').forEach(btn => {
+  btn.addEventListener('click', () => send(JSON.parse(btn.dataset.cmd)));
+});
+
+// Katılımcı linkini tam URL yap
+document.getElementById('plink').href = new URL('participant.html', location.href).href;
+</script>
+</body>
+</html>

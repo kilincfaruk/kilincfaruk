@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Işık Şovu — Katıl</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: #000; color: #e9e9ee; overflow: hidden;
+    font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  }
+  /* Tam ekran renk katmanı — ışık pikseli */
+  #stage { position: fixed; inset: 0; background: #000; transition: background .04s linear; z-index: 1; }
+  /* Katılım kapısı */
+  #gate {
+    position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 24px;
+    background: radial-gradient(circle at 50% 40%, #1a1a24, #000);
+  }
+  #gate.hidden { display: none; }
+  #gate h1 { font-size: 24px; margin: 0; }
+  #gate p { color: #a0a0ad; margin: 0; font-size: 14px; max-width: 320px; }
+  #joinBtn {
+    border: 0; border-radius: 16px; padding: 22px 40px; font-size: 20px; font-weight: 700;
+    color: #fff; background: #1f8f4e;
+  }
+  #status {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 6px 10px;
+    font-size: 12px; font-family: ui-monospace, monospace; color: #9aa;
+    background: rgba(0,0,0,.35); pointer-events: none;
+  }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171; margin-right:6px; vertical-align:middle;}
+  .dot.on { background:#4ade80; }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="status"><span class="dot" id="dot"></span><span id="statusText">bağlanılıyor…</span></div>
+  <div id="gate">
+    <h1>🔦 Işık Şovuna Katıl</h1>
+    <p>Butona bas, kamera iznini ver. Telefonun sahnedeki komutlarla senkron yanıp sönecek.</p>
+    <button id="joinBtn">Katıl</button>
+    <p id="gateNote" style="font-size:12px"></p>
+  </div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://fwbtoktcjtfxairxdnqk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6IYn_AFX91VcX5tq2b_QoA_iBZMrKD9';
+const CHANNEL = 'show';
+
+const stage = document.getElementById('stage');
+const gate = document.getElementById('gate');
+const dot = document.getElementById('dot');
+const statusText = document.getElementById('statusText');
+const gateNote = document.getElementById('gateNote');
+
+let track = null, torchSupported = false, torchState = false;
+let strobeTimer = null, wakeLock = null;
+
+// ---- Supabase Realtime ----
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const channel = sb.channel(CHANNEL, { config: { presence: { key: Math.random().toString(36).slice(2) } } });
+
+channel.on('broadcast', { event: 'cmd' }, ({ payload }) => applyCmd(payload));
+channel.subscribe((s) => {
+  const online = s === 'SUBSCRIBED';
+  dot.classList.toggle('on', online);
+  statusText.textContent = online ? 'bağlı — komut bekleniyor' : ('durum: ' + s);
+  if (online) channel.track({ t: Date.now() });
+});
+
+// ---- Komutları uygula ----
+function applyCmd(cmd) {
+  if (!cmd || !cmd.action) return;
+  stopStrobe();
+  switch (cmd.action) {
+    case 'color':  setColor(cmd.value || '#ffffff'); setTorch(false); break;
+    case 'torch':  setTorch(!!cmd.on); if (!cmd.on) setColor('#000000'); break;
+    case 'flash':  setColor('#ffffff'); setTorch(true); break; // ekran+flaş birlikte
+    case 'strobe': startStrobe(cmd.value || '#ffffff', cmd.hz || 6, !!cmd.torch); break;
+    case 'off':    setColor('#000000'); setTorch(false); break;
+  }
+}
+
+function setColor(hex) { stage.style.background = hex; }
+
+function setTorch(v) {
+  if (!track || !torchSupported) return;
+  track.applyConstraints({ advanced: [{ torch: v }] }).then(() => { torchState = v; }).catch(() => {});
+}
+
+function startStrobe(color, hz, useTorch) {
+  const period = Math.max(60, Math.round(1000 / hz));
+  let on = false;
+  strobeTimer = setInterval(() => {
+    on = !on;
+    setColor(on ? color : '#000000');
+    if (useTorch) setTorch(on);
+  }, period);
+}
+function stopStrobe() { if (strobeTimer) { clearInterval(strobeTimer); strobeTimer = null; } }
+
+// ---- Katılım: kamera + tam ekran + wake lock ----
+document.getElementById('joinBtn').onclick = async () => {
+  gate.classList.add('hidden');
+  // Ekranı açık tut
+  try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  // Tam ekran (destekleyen tarayıcılarda)
+  try { await document.documentElement.requestFullscreen(); } catch (e) {}
+  // Kamera / torch
+  if (!window.isSecureContext) { note('HTTPS gerekli — flaş çalışmaz.'); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    track = stream.getVideoTracks()[0];
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    torchSupported = !!caps.torch;
+    note(torchSupported ? 'Flaş hazır ✔' : 'Bu cihazda flaş yok; ekran rengiyle katılıyorsun.');
+  } catch (e) {
+    note('Kamera reddedildi; ekran rengiyle katılıyorsun.');
+  }
+};
+function note(t) { statusText.textContent = t; }
+
+// Wake lock kopması durumunda geri al
+document.addEventListener('visibilitychange', async () => {
+  if (wakeLock && document.visibilityState === 'visible') {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  }
+});
+</script>
+</body>
+</html>
