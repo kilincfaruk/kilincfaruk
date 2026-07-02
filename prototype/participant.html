@@ -8,31 +8,21 @@
   :root { color-scheme: dark; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
-  body {
-    background: #000; color: #e9e9ee; overflow: hidden;
-    font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
-  }
-  /* Tam ekran renk katmanı — ışık pikseli */
-  #stage { position: fixed; inset: 0; background: #000; transition: background .04s linear; z-index: 1; }
-  /* Katılım kapısı */
-  #gate {
-    position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 24px;
-    background: radial-gradient(circle at 50% 40%, #1a1a24, #000);
-  }
-  #gate.hidden { display: none; }
-  #gate h1 { font-size: 24px; margin: 0; }
-  #gate p { color: #a0a0ad; margin: 0; font-size: 14px; max-width: 320px; }
-  #joinBtn {
-    border: 0; border-radius: 16px; padding: 22px 40px; font-size: 20px; font-weight: 700;
-    color: #fff; background: #1f8f4e;
-  }
-  #status {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 5; padding: 6px 10px;
-    font-size: 12px; font-family: ui-monospace, monospace; color: #9aa;
-    background: rgba(0,0,0,.35); pointer-events: none;
-  }
-  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171; margin-right:6px; vertical-align:middle;}
+  body { background:#000; color:#e9e9ee; overflow:hidden;
+    font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif; }
+  #stage { position:fixed; inset:0; background:#000; z-index:1; }
+  #gate { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px;
+    background:radial-gradient(circle at 50% 40%, #1a1a24, #000); }
+  #gate.hidden { display:none; }
+  #gate h1 { font-size:24px; margin:0; }
+  #gate p { color:#a0a0ad; margin:0; font-size:14px; max-width:320px; }
+  #joinBtn { border:0; border-radius:16px; padding:22px 40px; font-size:20px; font-weight:700;
+    color:#fff; background:#1f8f4e; }
+  #status { position:fixed; top:0; left:0; right:0; z-index:5; padding:6px 10px; font-size:12px;
+    font-family:ui-monospace,monospace; color:#9aa; background:rgba(0,0,0,.35); pointer-events:none; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171;
+    margin-right:6px; vertical-align:middle; }
   .dot.on { background:#4ade80; }
 </style>
 </head>
@@ -43,7 +33,7 @@
     <h1>🔦 Işık Şovuna Katıl</h1>
     <p>Butona bas, kamera iznini ver. Telefonun sahnedeki komutlarla senkron yanıp sönecek.</p>
     <button id="joinBtn">Katıl</button>
-    <p id="gateNote" style="font-size:12px"></p>
+    <p id="gateNote" style="font-size:12px;color:#8b8b98"></p>
   </div>
 
 <script type="module">
@@ -57,81 +47,99 @@ const stage = document.getElementById('stage');
 const gate = document.getElementById('gate');
 const dot = document.getElementById('dot');
 const statusText = document.getElementById('statusText');
-const gateNote = document.getElementById('gateNote');
 
-let track = null, torchSupported = false, torchState = false;
-let strobeTimer = null, wakeLock = null;
+// --- Bu telefonun kimliği: sabit rastgele faz (0..1). Dalga/sıra efektlerinin sırrı bu. ---
+let phase = Math.random();
+try { const s = localStorage.getItem('ph'); if (s) phase = +s; else localStorage.setItem('ph', phase); } catch(e){}
 
-// ---- Supabase Realtime ----
+let track = null, torchSupported = false, curTorch = false, joined = false;
+let effect = { action: 'off' };
+
+// ---- Realtime ----
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const channel = sb.channel(CHANNEL, { config: { presence: { key: Math.random().toString(36).slice(2) } } });
-
-channel.on('broadcast', { event: 'cmd' }, ({ payload }) => applyCmd(payload));
+channel.on('broadcast', { event: 'cmd' }, ({ payload }) => { effect = payload || { action:'off' }; });
 channel.subscribe((s) => {
   const online = s === 'SUBSCRIBED';
   dot.classList.toggle('on', online);
-  statusText.textContent = online ? 'bağlı — komut bekleniyor' : ('durum: ' + s);
+  if (!joined) statusText.textContent = online ? 'bağlı — "Katıl"a bas' : ('durum: ' + s);
   if (online) channel.track({ t: Date.now() });
 });
 
-// ---- Komutları uygula ----
-function applyCmd(cmd) {
-  if (!cmd || !cmd.action) return;
-  stopStrobe();
-  switch (cmd.action) {
-    case 'color':  setColor(cmd.value || '#ffffff'); setTorch(false); break;
-    case 'torch':  setTorch(!!cmd.on); if (!cmd.on) setColor('#000000'); break;
-    case 'flash':  setColor('#ffffff'); setTorch(true); break; // ekran+flaş birlikte
-    case 'strobe': startStrobe(cmd.value || '#ffffff', cmd.hz || 6, !!cmd.torch); break;
-    case 'off':    setColor('#000000'); setTorch(false); break;
+// ---- Renk yardımcıları ----
+function hexRgb(h){ h=h.replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) }; }
+function paint(hex, v){ const {r,g,b}=hexRgb(hex); const k=Math.max(0,Math.min(1,v));
+  stage.style.background = `rgb(${r*k|0},${g*k|0},${b*k|0})`; }
+function paintHSL(h, l){ stage.style.background = `hsl(${h|0} 100% ${Math.round(Math.max(0,Math.min(1,l))*50)}%)`; }
+function setTorch(v){ if(v===curTorch) return; curTorch=v;
+  if(track && torchSupported){ track.applyConstraints({advanced:[{torch:v}]}).catch(()=>{}); } }
+
+// ---- Animasyon motoru: her kare, efekt + faz + ortak saatten kendi durumunu hesaplar ----
+function frame(){
+  const now = Date.now();
+  const t = (now - (effect.startAt || now)) / 1000;   // efekt başından beri saniye
+  const color = effect.color || '#ffffff';
+  let torch = false;
+  switch (effect.action) {
+    case 'color':  paint(color, 1); break;
+    case 'flash':  paint('#ffffff', 1); torch = true; break;
+    case 'off':    paint('#000000', 0); break;
+
+    case 'wave': {  // crowd boyunca gezen dalga — faz = konum
+      const speed = effect.speed || 0.4;
+      const v = 0.5 + 0.5 * Math.cos(2*Math.PI*(t*speed - phase));
+      paint(color, v*v); torch = effect.torch && v > 0.75; break;
+    }
+    case 'twinkle': { // her telefon farklı anda parlar (yıldız serpme)
+      const rate = effect.rate || 1.6;
+      const on = Math.sin(2*Math.PI*(t*rate*(0.6+phase*0.9)) + phase*97) > 0.72;
+      paint(color, on ? 1 : 0); break;
+    }
+    case 'rainbow': { // her telefonun rengi fazına göre → crowd gökkuşağı
+      const speed = effect.speed || 0.08;
+      paintHSL(((phase + t*speed) % 1) * 360, 1); break;
+    }
+    case 'chase': { // faz sırasına göre gruplar tek tek yanar
+      const groups = effect.groups || 5, bpm = effect.bpm || 120;
+      const myGroup = Math.min(groups-1, Math.floor(phase*groups));
+      const active = Math.floor(t*bpm/60) % groups;
+      const on = active === myGroup;
+      paint(color, on ? 1 : 0.02); torch = effect.torch && on; break;
+    }
+    case 'pulse': { // hep birlikte nefes alma
+      const bpm = effect.bpm || 60;
+      const v = 0.5 + 0.5*Math.sin(2*Math.PI*t*bpm/60);
+      paint(color, v); torch = effect.torch && v > 0.7; break;
+    }
+    case 'strobe': { // hep birlikte hızlı yanıp sönme
+      const hz = effect.hz || 8;
+      const on = (Math.floor(t*hz*2) % 2) === 0;
+      paint(color, on ? 1 : 0); torch = effect.torch && on; break;
+    }
+    default: paint('#000000', 0);
   }
+  setTorch(!!torch);
+  requestAnimationFrame(frame);
 }
+requestAnimationFrame(frame);
 
-function setColor(hex) { stage.style.background = hex; }
-
-function setTorch(v) {
-  if (!track || !torchSupported) return;
-  track.applyConstraints({ advanced: [{ torch: v }] }).then(() => { torchState = v; }).catch(() => {});
-}
-
-function startStrobe(color, hz, useTorch) {
-  const period = Math.max(60, Math.round(1000 / hz));
-  let on = false;
-  strobeTimer = setInterval(() => {
-    on = !on;
-    setColor(on ? color : '#000000');
-    if (useTorch) setTorch(on);
-  }, period);
-}
-function stopStrobe() { if (strobeTimer) { clearInterval(strobeTimer); strobeTimer = null; } }
-
-// ---- Katılım: kamera + tam ekran + wake lock ----
+// ---- Katılım ----
 document.getElementById('joinBtn').onclick = async () => {
+  joined = true;
   gate.classList.add('hidden');
-  // Ekranı açık tut
-  try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
-  // Tam ekran (destekleyen tarayıcılarda)
-  try { await document.documentElement.requestFullscreen(); } catch (e) {}
-  // Kamera / torch
-  if (!window.isSecureContext) { note('HTTPS gerekli — flaş çalışmaz.'); return; }
+  statusText.textContent = 'bağlı — komut bekleniyor';
+  try { await navigator.wakeLock.request('screen'); } catch(e){}
+  try { await document.documentElement.requestFullscreen(); } catch(e){}
+  if (!window.isSecureContext) { statusText.textContent = 'HTTPS gerekli — flaş yok, ekranla katılıyorsun'; return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     track = stream.getVideoTracks()[0];
     const caps = track.getCapabilities ? track.getCapabilities() : {};
     torchSupported = !!caps.torch;
-    note(torchSupported ? 'Flaş hazır ✔' : 'Bu cihazda flaş yok; ekran rengiyle katılıyorsun.');
-  } catch (e) {
-    note('Kamera reddedildi; ekran rengiyle katılıyorsun.');
-  }
+    statusText.textContent = torchSupported ? 'flaş hazır ✔ komut bekleniyor' : 'flaş yok; ekranla katılıyorsun';
+  } catch(e) { statusText.textContent = 'kamera reddedildi; ekranla katılıyorsun'; }
 };
-function note(t) { statusText.textContent = t; }
-
-// Wake lock kopması durumunda geri al
-document.addEventListener('visibilitychange', async () => {
-  if (wakeLock && document.visibilityState === 'visible') {
-    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
-  }
-});
 </script>
 </body>
 </html>
