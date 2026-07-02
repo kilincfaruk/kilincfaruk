@@ -3,52 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Işık Şovu — Katıl</title>
+<title>Işık Masası — Katıl</title>
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; }
-  body { background:#000; color:#e9e9ee; overflow:hidden;
-    font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif; }
+  :root { color-scheme: dark;
+    --amber:#FFB454; --green:#2EE66B; --red:#FF3B30;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+  html, body { height:100%; margin:0; }
+  body { background:#000; color:#E8ECF2; overflow:hidden;
+    font-family:-apple-system,system-ui,'Segoe UI',Roboto,sans-serif; }
+
+  /* Işık yüzeyi */
   #stage { position:fixed; inset:0; background:#000; z-index:1; }
-  #gate { position:fixed; inset:0; z-index:10; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:18px; text-align:center; padding:24px;
-    background:radial-gradient(circle at 50% 40%, #1a1a24, #000); }
+
+  /* KAPI */
+  #gate { position:fixed; inset:0; z-index:10; background:#000; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:26px; text-align:center; padding:28px; }
   #gate.hidden { display:none; }
-  #gate h1 { font-size:24px; margin:0; }
-  #gate p { color:#a0a0ad; margin:0; font-size:14px; max-width:320px; }
-  #joinBtn { border:0; border-radius:16px; padding:22px 40px; font-size:20px; font-weight:700;
-    color:#fff; background:#1f8f4e; }
-  #status { position:fixed; top:0; left:0; right:0; z-index:5; padding:6px 10px; font-size:12px;
-    font-family:ui-monospace,monospace; color:#9aa; background:rgba(0,0,0,.35); pointer-events:none; }
-  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171;
-    margin-right:6px; vertical-align:middle; }
-  .dot.on { background:#4ade80; }
+  #gateLed { width:10px; height:10px; border-radius:50%; background:var(--amber);
+    box-shadow:0 0 14px 3px rgba(255,180,84,.5); animation:breathe 2s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{opacity:.25} 50%{opacity:1} }
+  #gate .head { font-family:var(--mono); font-size:12px; color:#8B94A6; letter-spacing:.1em; line-height:2; }
+  #gateStatus { font-family:var(--mono); font-size:12px; }
+  #gateStatus.on  { color:var(--green); }
+  #gateStatus.off { color:var(--red); }
+  #joinBtn { min-height:72px; padding:0 44px; font-size:19px; font-weight:800; letter-spacing:.05em;
+    color:var(--amber); background:#0B0D12; border:1px solid var(--amber); border-radius:6px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 0 22px -6px rgba(255,180,84,.4); }
+  #joinBtn:active { transform:translateY(1px); }
+  #gateNote { position:fixed; bottom:14px; left:0; right:0; font-family:var(--mono);
+    font-size:10px; color:#565F70; text-align:center; padding:0 20px; }
+
+  /* KATILIM ANI: koltuk kartı */
+  #intro { position:fixed; inset:0; z-index:9; background:#000; display:none;
+    align-items:center; justify-content:center; transition:opacity .5s; }
+  #intro.show { display:flex; }
+  #intro .card { font-family:var(--mono); font-size:22px; color:#E8ECF2; letter-spacing:.06em; }
+
+  /* BEKLEME */
+  #idle { position:fixed; bottom:26px; left:0; right:0; z-index:5; display:none;
+    flex-direction:column; align-items:center; gap:12px; pointer-events:none; }
+  #idle.show { display:flex; }
+  #idleLed { width:5px; height:5px; border-radius:50%; background:var(--amber);
+    box-shadow:0 0 8px 2px rgba(255,180,84,.45); animation:breathe 4s ease-in-out infinite; }
+  #idleTxt { font-family:var(--mono); font-size:11px; color:#565F70; letter-spacing:.1em;
+    transition:opacity 1s; }
+  #idleTxt.fade { opacity:0; }
+
+  /* DURUM ŞERİDİ (yalnız değişimde 3s) */
+  #strip { position:fixed; top:0; left:0; right:0; z-index:6; height:26px; display:flex;
+    align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:11px;
+    letter-spacing:.08em; color:#E8ECF2; background:rgba(0,0,0,.55);
+    opacity:0; transition:opacity .3s; pointer-events:none; }
+  #strip.show { opacity:1; }
+  #strip .led { width:6px; height:6px; border-radius:50%; background:#8B94A6; }
+  #strip.ok  .led { background:var(--green); box-shadow:0 0 6px rgba(46,230,107,.6); }
+  #strip.err .led { background:var(--red);   box-shadow:0 0 6px rgba(255,59,48,.6); }
+
+  /* TANI (iki parmak uzun basış) */
+  #diag { position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.86); display:none;
+    align-items:center; justify-content:center; }
+  #diag.show { display:flex; }
+  #diag pre { font-family:var(--mono); font-size:13px; color:#47E0FF; line-height:2; margin:0; }
 </style>
 </head>
 <body>
   <div id="stage"></div>
-  <div id="status"><span class="dot" id="dot"></span><span id="statusText">bağlanılıyor…</span></div>
-  <div id="gate">
-    <h1>🔦 Işık Şovuna Katıl</h1>
-    <p>Butona bas, kamera iznini ver. Telefonun sahnedeki komutlarla senkron yanıp sönecek.</p>
-    <button id="joinBtn">Katıl</button>
+
+  <div id="strip"><span class="led"></span><span id="stripTxt"></span></div>
+
+  <div id="idle">
+    <div id="idleLed"></div>
+    <div id="idleTxt">HAZIR — MASA BEKLENİYOR</div>
   </div>
 
+  <div id="intro"><div class="card" id="seatCard"></div></div>
+
+  <div id="gate">
+    <div id="gateLed"></div>
+    <div class="head">IŞIK MASASI · KANAL: SHOW<br><span id="gateStatus" class="off">● bağlanıyor…</span></div>
+    <button id="joinBtn">IŞIĞA KATIL</button>
+    <div id="gateNote">flaş için kamera izni istenir · iOS'ta yalnız ekran</div>
+  </div>
+
+  <div id="diag"><pre id="diagTxt"></pre></div>
+
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { fxState } from './engine.js';
 
 const SUPABASE_URL = 'https://fwbtoktcjtfxairxdnqk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6IYn_AFX91VcX5tq2b_QoA_iBZMrKD9';
 const CHANNEL = 'show';
 
-const stage = document.getElementById('stage');
-const gate = document.getElementById('gate');
-const dot = document.getElementById('dot');
-const statusText = document.getElementById('statusText');
+const $ = (id) => document.getElementById(id);
+const stage = $('stage');
 
-// --- Bu telefonun kimliği: sabit rastgele faz (0..1). Dalga/sıra efektlerinin sırrı. ---
+// --- Bu telefonun kimliği: sabit rastgele faz (0..1). Dalga/sıra desenlerinin sırrı. ---
 let phase = Math.random();
 try {
   const s = localStorage.getItem('ph');
@@ -57,20 +107,62 @@ try {
 
 let track = null, torchSupported = false, curTorch = false, joined = false;
 let effect = { action: 'off' };
+let idleSince = Date.now();
+let online = false, wasOnline = false;
 
-// ---- Realtime ----
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-const channel = sb.channel(CHANNEL, { config: { presence: { key: Math.random().toString(36).slice(2) } } });
-channel.on('broadcast', { event: 'cmd' }, ({ payload }) => {
-  effect = payload || { action: 'off' };
-  if (joined) statusText.textContent = 'efekt: ' + (effect.action || '—');
-});
-channel.subscribe((s) => {
-  const online = s === 'SUBSCRIBED';
-  dot.classList.toggle('on', online);
-  if (!joined) statusText.textContent = online ? 'bağlı — "Katıl"a bas' : ('durum: ' + s);
-  if (online) channel.track({ t: Date.now() });
-});
+// ---- Durum şeridi: yalnız değişimde 3s (err kalıcı) ----
+let stripTimer = null;
+function strip(msg, cls) {
+  const el = $('strip');
+  el.className = 'show' + (cls ? ' ' + cls : '');
+  $('stripTxt').textContent = msg;
+  clearTimeout(stripTimer);
+  if (cls !== 'err') stripTimer = setTimeout(() => {
+    el.classList.remove('show');
+    if (joined && !online) strip('● YENİDEN BAĞLANIYOR…', 'err');   // kalıcı hata geçici mesajla ezilmesin
+  }, 3000);
+}
+
+// ---- Realtime (dinamik import: CDN düşerse sayfa sessizce ölmez) ----
+let channel = null;
+let clockSamples = [], clockOffset = 0;   // operatör saatine kaba hizalama
+let prevAction = null;
+(async () => {
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    channel = sb.channel(CHANNEL, { config: { presence: { key: Math.random().toString(36).slice(2) } } });
+    channel.on('broadcast', { event: 'cmd' }, ({ payload }) => {
+      const p = payload || { action: 'off' };
+      if (typeof p.sentAt === 'number') {
+        clockSamples.push(Date.now() - p.sentAt);          // örnek = saat ofseti + ağ gecikmesi
+        if (clockSamples.length > 9) clockSamples.shift();
+        clockOffset = Math.min(...clockSamples);           // min ≈ gerçek ofset (en hızlı paket)
+      }
+      const changed = p.action !== prevAction;
+      prevAction = p.action;
+      effect = p;
+      if (changed && p.action === 'off') idleSince = Date.now();
+      // blackout ('off') kasıtlı olarak şerit göstermez — karartma karanlık kalmalı
+      if (joined && changed && p.action !== 'off') strip('EFEKT: ' + p.action.toUpperCase());
+    });
+    channel.subscribe((s) => {
+      online = s === 'SUBSCRIBED';
+      $('gateStatus').className = online ? 'on' : 'off';
+      $('gateStatus').textContent = online ? '● BAĞLI — YERİNİ AL' : '● bağlanıyor…';
+      if (joined) {
+        if (!online) strip('● YENİDEN BAĞLANIYOR…', 'err');
+        else if (wasOnline === false) strip('● BAĞLANDI', 'ok');
+      }
+      if (online) { channel.track({ t: Date.now() }); wasOnline = true; }
+      else wasOnline = false;
+    });
+  } catch (e) {
+    $('gateStatus').className = 'off';
+    $('gateStatus').textContent = '● SUNUCUYA ULAŞILAMADI';
+    if (joined) strip('SUNUCU YOK — KOMUT ALINAMIYOR', 'err');
+  }
+})();
 
 // ---- Flaş ----
 function setTorch(v) {
@@ -81,40 +173,81 @@ function setTorch(v) {
   }
 }
 
-// ---- Animasyon: ortak motor her karede efekt+faz+saatten durumu hesaplar ----
+// ---- Ana döngü: motor + bekleme durumu ----
+let introUntil = 0, introColor = null;
 function frame() {
-  const st = fxState(effect, phase, Date.now());
-  stage.style.background = st.css;
-  setTorch(!!st.torch);
+  const now = Date.now();
+  if (now < introUntil && introColor) {
+    stage.style.background = introColor;      // katılım blink'i: faz renginde
+  } else {
+    const st = fxState(effect, phase, now - clockOffset);  // operatör saat düzlemine hizalı
+    stage.style.background = st.css;
+    setTorch(!!st.torch);
+  }
+  // bekleme LED'i yalnız şov yokken
+  const idle = joined && (!effect.action || effect.action === 'off');
+  $('idle').classList.toggle('show', idle);
+  if (idle) $('idleTxt').classList.toggle('fade', now - idleSince > 5000);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 
 // ---- Katılım ----
-document.getElementById('joinBtn').onclick = async () => {
+$('joinBtn').onclick = async () => {
   joined = true;
-  gate.classList.add('hidden');
-  statusText.textContent = 'bağlı — komut bekleniyor';
+  $('gate').classList.add('hidden');
+  idleSince = Date.now();
+  if (navigator.vibrate) navigator.vibrate(30);
+  // 300ms faz-renginde blink: "sen busun"
+  introColor = `hsl(${Math.round(phase * 360)} 100% 55%)`;
+  introUntil = Date.now() + 300;
+  // 1.8s koltuk kartı
+  $('seatCard').textContent = `KOLTUK ${String(Math.round(phase * 100)).padStart(2, '0')} · FAZ ${phase.toFixed(2)}`;
+  const intro = $('intro');
+  setTimeout(() => { intro.classList.add('show'); intro.style.opacity = '1'; }, 300);
+  setTimeout(() => { intro.style.opacity = '0'; }, 2100);
+  setTimeout(() => { intro.classList.remove('show'); }, 2600);
+
   try { await navigator.wakeLock.request('screen'); } catch (e) {}
   try { await document.documentElement.requestFullscreen(); } catch (e) {}
-  if (!window.isSecureContext) { statusText.textContent = 'HTTPS gerekli — flaş yok, ekranla katılıyorsun'; return; }
+  if (!window.isSecureContext) { strip('HTTPS YOK — EKRANLA KATILIYORSUN', 'err'); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     track = stream.getVideoTracks()[0];
     const caps = track.getCapabilities ? track.getCapabilities() : {};
     torchSupported = !!caps.torch;
-    statusText.textContent = torchSupported ? 'flaş hazır ✔ komut bekleniyor' : 'flaş yok; ekranla katılıyorsun';
+    strip(torchSupported ? 'FLAŞ HAZIR' : 'FLAŞ YOK — EKRANLA KATILIYORSUN', torchSupported ? 'ok' : undefined);
   } catch (e) {
-    statusText.textContent = 'kamera reddedildi; ekranla katılıyorsun';
+    strip('KAMERA YOK — EKRANLA KATILIYORSUN');
   }
 };
 
-// Wake lock görünürlük değişince düşebilir — geri al
+// ---- Wake lock görünürlük değişince düşebilir — geri al ----
 document.addEventListener('visibilitychange', async () => {
-  if (joined && document.visibilityState === 'visible') {
+  if (document.visibilityState === 'hidden') { setTorch(false); return; } // arka planda flaş yanık kalmasın
+  if (joined) {
     try { await navigator.wakeLock.request('screen'); } catch (e) {}
   }
 });
+
+// ---- Tanı: iki parmakla 600ms uzun basış ----
+let diagTimer = null;
+addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2 && joined) {
+    diagTimer = setTimeout(() => {
+      $('diagTxt').textContent =
+        `FAZ    ${phase.toFixed(3)}\n` +
+        `KOLTUK ${String(Math.round(phase * 100)).padStart(2, '0')}\n` +
+        `EFEKT  ${(effect.action || '—').toUpperCase()}\n` +
+        `FLAŞ   ${torchSupported ? (curTorch ? 'AÇIK' : 'HAZIR') : 'YOK'}\n` +
+        `BAĞ    ${online ? 'BAĞLI' : 'KOPUK'}`;
+      $('diag').classList.add('show');
+    }, 600);
+  }
+});
+addEventListener('touchend', () => clearTimeout(diagTimer));
+addEventListener('touchmove', () => clearTimeout(diagTimer));
+$('diag').onclick = () => $('diag').classList.remove('show');
 </script>
 </body>
 </html>
