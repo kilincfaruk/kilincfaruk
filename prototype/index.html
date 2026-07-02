@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flaş Testi — Mini Işık Şovu</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100dvh; background: #0b0b0f; color: #e9e9ee;
+    font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+    display: flex; flex-direction: column; gap: 14px; padding: 18px;
+  }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  p.sub { margin: 0 0 6px; color: #a0a0ad; font-size: 13px; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button {
+    appearance: none; border: 0; border-radius: 14px; padding: 20px 14px;
+    font-size: 17px; font-weight: 600; color: #fff; background: #2b2b36;
+    transition: transform .05s ease, background .15s ease;
+  }
+  button:active { transform: scale(.97); }
+  button.on   { background: #1f8f4e; }
+  button.off  { background: #3a3a46; }
+  button.strobe { background: #b8860b; }
+  button.screen { background: #2456c9; }
+  button:disabled { opacity: .4; }
+  #diag {
+    background: #16161d; border: 1px solid #26262f; border-radius: 12px;
+    padding: 12px 14px; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+    font-family: ui-monospace, Menlo, monospace; color: #c7c7d1;
+  }
+  .ok { color: #4ade80; } .bad { color: #f87171; } .warn { color: #fbbf24; }
+  /* Tam ekran renk paneli (flaş desteklenmezse yedek) */
+  #flood {
+    position: fixed; inset: 0; background: #fff; display: none; z-index: 50;
+    align-items: center; justify-content: center; color: #000; font-size: 15px;
+  }
+  #flood.show { display: flex; }
+</style>
+</head>
+<body>
+  <h1>🔦 Flaş Testi</h1>
+  <p class="sub">Amaç: bu telefonun tarayıcıda flaşı (torch) kontrol edip edemediğini kanıtlamak.</p>
+
+  <div class="btns">
+    <button id="on"     class="on"     disabled>Flaş AÇ</button>
+    <button id="off"    class="off"    disabled>Flaş KAPAT</button>
+    <button id="strobe" class="strobe" disabled>Yanıp Sön (strobe)</button>
+    <button id="screen" class="screen">Ekranı Beyaz Yak (yedek)</button>
+  </div>
+
+  <div id="diag">Tanılama yükleniyor…</div>
+
+  <div id="flood">Kapatmak için dokun</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const diag = $('diag');
+let track = null, torchSupported = false, strobeTimer = null, torchState = false;
+
+function line(label, value, cls) {
+  const c = cls ? ` class="${cls}"` : '';
+  return `${label}: <span${c}>${value}</span>`;
+}
+
+function renderDiag(extra = '') {
+  const secure = window.isSecureContext;
+  const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  diag.innerHTML = [
+    line('Güvenli bağlam (HTTPS)', secure ? 'EVET' : 'HAYIR — flaş çalışmaz!', secure ? 'ok' : 'bad'),
+    line('getUserMedia', hasMedia ? 'var' : 'yok', hasMedia ? 'ok' : 'bad'),
+    line('Cihaz', isIOS ? 'iOS — tarayıcı torch DESTEKLEMEZ' : 'iOS değil (muhtemelen Android)', isIOS ? 'bad' : 'ok'),
+    line('Torch yeteneği', torchSupported ? 'DESTEKLENİYOR ✔' : 'bilinmiyor / kamera açılmadı', torchSupported ? 'ok' : 'warn'),
+    extra,
+  ].filter(Boolean).join('\n');
+}
+renderDiag();
+
+async function initCamera() {
+  if (!window.isSecureContext) {
+    renderDiag(line('Hata', 'HTTPS gerekli. http:// üzerinden kamera/flaş açılamaz.', 'bad'));
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    track = stream.getVideoTracks()[0];
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    torchSupported = !!caps.torch;
+    renderDiag(torchSupported
+      ? line('Sonuç', 'Bu cihaz flaşı kontrol edebilir. Butonlar aktif.', 'ok')
+      : line('Sonuç', 'Kamera açıldı ama torch yeteneği yok. Ekran yedeğini kullan.', 'warn'));
+    if (torchSupported) {
+      $('on').disabled = $('off').disabled = $('strobe').disabled = false;
+    }
+  } catch (e) {
+    renderDiag(line('Kamera hatası', e.name + ' — ' + e.message, 'bad'));
+  }
+}
+
+async function setTorch(v) {
+  if (!track || !torchSupported) return;
+  try {
+    await track.applyConstraints({ advanced: [{ torch: v }] });
+    torchState = v;
+  } catch (e) {
+    renderDiag(line('applyConstraints hatası', e.message, 'bad'));
+  }
+}
+
+$('on').onclick  = () => { stopStrobe(); setTorch(true); };
+$('off').onclick = () => { stopStrobe(); setTorch(false); };
+
+function stopStrobe() {
+  if (strobeTimer) { clearInterval(strobeTimer); strobeTimer = null; $('strobe').textContent = 'Yanıp Sön (strobe)'; }
+}
+$('strobe').onclick = () => {
+  if (strobeTimer) { stopStrobe(); setTorch(false); return; }
+  $('strobe').textContent = 'Durdur';
+  strobeTimer = setInterval(() => setTorch(!torchState), 350); // ~1.4 Hz; torch geçişi yavaştır
+};
+
+// Ekran yedeği: flaş yoksa (özellikle iOS) tam ekran beyaz
+const flood = $('flood');
+$('screen').onclick = () => { flood.classList.add('show'); };
+flood.onclick = () => { flood.classList.remove('show'); };
+
+// İlk dokunuşta kamerayı başlat (izin/otomatik oynatma politikaları için)
+window.addEventListener('pointerdown', function once() {
+  window.removeEventListener('pointerdown', once);
+  initCamera();
+}, { once: true });
+diag.innerHTML += '\n\n<span class="warn">→ İzin penceresini tetiklemek için ekrana bir kez dokun.</span>';
+</script>
+</body>
+</html>
