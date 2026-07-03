@@ -110,6 +110,19 @@
     border-image:repeating-linear-gradient(45deg,#caa53d 0 8px,#111 8px 16px) 2; border:2px solid; }
   #mBlackout.hit { background:var(--red); }
 
+  /* MÜZİK / RİTİM */
+  #listen { display:flex; align-items:center; gap:8px; width:100%; font-family:var(--mono);
+    font-size:11px; color:var(--mut); background:#181D26; border:1px solid var(--hair);
+    border-radius:4px; padding:10px; cursor:pointer; }
+  #listen.on { color:var(--amber); border-color:var(--amber); }
+  #beatInfo.hit { color:var(--amber); text-shadow:0 0 8px rgba(255,180,84,.8); }
+  #ytUrl { flex:1; background:#0B0D12; border:1px solid var(--hair); border-radius:4px;
+    color:var(--txt); font-family:var(--mono); font-size:11px; padding:8px; min-width:0; }
+  #ytUrl::placeholder { color:var(--dim); }
+  #ytWrap { margin-top:10px; }
+  #ytWrap iframe { width:100%; aspect-ratio:16/9; border:0; border-radius:4px; display:block; }
+  .hint { font-size:10px; color:var(--dim); margin:8px 0 0; line-height:1.6; }
+
   /* QR PERDESİ */
   #curtain { position:fixed; inset:0; z-index:50; background:#fff; display:none;
     flex-direction:column; align-items:center; justify-content:center; gap:18px; color:#000; }
@@ -176,6 +189,18 @@
         <div class="rowline"><label>BPM</label><input type="range" id="bpm" min="40" max="220" step="2" value="120"><span class="val" id="bpmV">120</span></div>
         <div class="rowline"><label>GRUP</label><input type="range" id="groups" min="2" max="12" step="1" value="5"><span class="val" id="groupsV">5</span></div>
         <div id="arm"><span class="led" id="armLed"></span> FLAŞ ARM — yavaş efektlerde telefon flaşları da yanar</div>
+      </div>
+
+      <div class="panel">
+        <p class="ptitle">Müzik · Ritim <span class="mono" id="beatInfo">KAPALI</span></p>
+        <button id="listen"><span class="led" id="listenLed"></span> 🎤 RİTMİ DİNLE (R) — vuruşlar efektlere işler</button>
+        <div class="rowline"><label>YOUTUBE</label>
+          <input type="text" id="ytUrl" placeholder="linki yapıştır, Enter'a bas">
+          <button class="tbtn" id="ytGo">YÜKLE</button></div>
+        <div id="ytWrap" hidden><iframe id="ytFrame" allow="autoplay; encrypted-media" title="müzik"></iframe></div>
+        <p class="hint">Tarayıcı YouTube'un sesine doğrudan erişemez; konsol MİKROFONU dinler.
+          Müziği hoparlörden çal (buradaki oynatıcı dahil) — BPM otomatik oturur,
+          Sıralı/Nabız/Strobe/DROP her 8 vuruşta gerçek vuruşa kilitlenir.</p>
       </div>
     </div>
   </div>
@@ -302,7 +327,7 @@ function buildPayload(action, opts = {}) {
   const colors = selColors();
   const p = {
     action,
-    startAt: Date.now() + 250,
+    startAt: opts.startAt || (Date.now() + 250),   // ritim modu vuruş anını geçebilir
     sentAt: Date.now(),          // katılımcı saat ofseti tahmini için
     colors, color: colors[0], mode,
     speed: +$('speed').value,
@@ -331,7 +356,7 @@ function apply(action, opts = {}, padEl = null) {
   const payload = buildPayload(action, opts);
   effect = payload;
   lastPayload = payload;
-  if (action !== 'flash') lastStable = { action, opts };
+  if (action !== 'flash') { lastStable = { action, opts: { ...opts } }; delete lastStable.opts.startAt; }
   if (action === 'off') blackoutAt = Date.now();
   $('cvOverlay').style.color = '';
   $('cvOverlay').textContent =
@@ -387,8 +412,12 @@ $('mBlackout').addEventListener('click', blackout);
 const keyFx = {}; EFFECTS.forEach((f) => keyFx[f.k] = f.a);
 addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;               // tarayıcı kısayollarına karışma
-  const ae = document.activeElement;                            // fader/buton odağı çift etki yapmasın
-  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'BUTTON')) ae.blur();
+  const ae = document.activeElement;
+  if (ae && ae.tagName === 'INPUT' && ae.type === 'text') {     // metin girişi: kısayolları yutma
+    if (e.key === 'Escape') ae.blur();
+    return;
+  }
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'BUTTON')) ae.blur(); // fader/buton odağı çift etki yapmasın
   if (e.key.startsWith('Arrow') || e.key === '[' || e.key === ']' || e.key === ' ') e.preventDefault();
   if (e.repeat) return;
   const k = e.key.toLowerCase();
@@ -397,6 +426,7 @@ addEventListener('keydown', (e) => {
   else if (k === 'f') flashDown();
   else if (k === 'd') dropDown();
   else if (k === 't') tap();
+  else if (k === 'r') $('listen').click();
   else if (k === 'm') setMode(mode === 'split' ? 'cycle' : 'split');
   else if (k === 'q') toggleCurtain();
   else if (e.key === 'Escape') $('curtain').classList.remove('show');
@@ -450,6 +480,79 @@ function tap() {
   }
 }
 $('tapBtn').onclick = tap;
+
+// ---------- MÜZİK / RİTİM: mikrofonla vuruş takibi ----------
+// Bas bandı (~20-260Hz) enerjisi hareketli ortalama + sapmayı aşınca vuruş sayılır.
+// BPM = son vuruş aralıklarının medyanı (70-180'e katlanır); beat bazlı efektler
+// her 8 vuruşta gerçek vuruş anına yeniden demirlenir (startAt = vuruş zamanı).
+const BEAT_FX = new Set(['chase', 'pulse', 'strobe', 'riser']);
+const rh = { on: false, ac: null, an: null, buf: null, hist: [], lastOnset: 0, onsets: [], beats: 0 };
+
+$('listen').onclick = async () => {
+  if (rh.on) {
+    rh.on = false;
+    $('listen').classList.remove('on'); $('listenLed').className = 'led';
+    $('beatInfo').textContent = 'KAPALI';
+    try { rh.ac.close(); } catch (e) {}
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    });
+    rh.ac = new (window.AudioContext || window.webkitAudioContext)();
+    await rh.ac.resume();
+    rh.an = rh.ac.createAnalyser(); rh.an.fftSize = 2048;
+    rh.ac.createMediaStreamSource(stream).connect(rh.an);
+    rh.buf = new Uint8Array(rh.an.frequencyBinCount);
+    rh.hist = []; rh.onsets = []; rh.beats = 0; rh.lastOnset = 0; rh.on = true;
+    $('listen').classList.add('on'); $('listenLed').className = 'led amber';
+    $('beatInfo').textContent = 'DİNLİYOR…';
+  } catch (e) { $('beatInfo').textContent = 'MİKROFON YOK'; }
+};
+
+function rhythmTick(now) {
+  rh.an.getByteFrequencyData(rh.buf);
+  let e = 0; for (let i = 1; i <= 12; i++) e += rh.buf[i]; e /= 12;
+  rh.hist.push(e); if (rh.hist.length > 43) rh.hist.shift();   // ~0.7s pencere
+  if (rh.hist.length < 20) return;
+  let m = 0; for (const x of rh.hist) m += x; m /= rh.hist.length;
+  let sd = 0; for (const x of rh.hist) sd += (x - m) * (x - m); sd = Math.sqrt(sd / rh.hist.length);
+  if (e > m + 1.5 * sd && e > 24 && now - rh.lastOnset > 240) rhythmOnset(now);
+}
+
+function rhythmOnset(now) {
+  rh.lastOnset = now; rh.beats++;
+  $('beatInfo').classList.add('hit'); setTimeout(() => $('beatInfo').classList.remove('hit'), 90);
+  rh.onsets.push(now); if (rh.onsets.length > 9) rh.onsets.shift();
+  if (rh.onsets.length < 5) return;
+  const iv = rh.onsets.slice(1).map((t, i) => t - rh.onsets[i]).sort((a, b) => a - b);
+  let bpm = 60000 / iv[Math.floor(iv.length / 2)];
+  while (bpm < 70) bpm *= 2;
+  while (bpm > 180) bpm /= 2;
+  bpm = Math.round(bpm);
+  $('beatInfo').textContent = '● ' + bpm + ' BPM';
+  if (Math.abs(bpm - +$('bpm').value) >= 3) {
+    $('bpm').value = bpm;
+    $('bpm').dispatchEvent(new Event('input'));   // change YOK — yayın vuruş demirlemesiyle gider
+  }
+  if (rh.beats % 8 === 0 && lastStable && BEAT_FX.has(lastStable.action) && !flashHeld && !dropHeld) {
+    apply(lastStable.action, { ...lastStable.opts, startAt: now }, padByAction[lastStable.action]);
+  }
+}
+
+// ---------- YouTube oynatıcı (ses hoparlörden → mikrofon dinler) ----------
+$('ytGo').onclick = () => {
+  const m = ($('ytUrl').value || '').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
+  if (!m) { $('ytUrl').value = ''; $('ytUrl').placeholder = 'link anlaşılamadı — tekrar yapıştır'; return; }
+  $('ytFrame').src = 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1';
+  $('ytWrap').hidden = false;
+  $('ytUrl').blur();
+};
+$('ytUrl').addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter') $('ytGo').click();
+});
 
 // ---------- Sahne monitörü (canvas tribün) ----------
 const cv = $('stageCv');
@@ -546,6 +649,7 @@ function draw(now) {
 function loop() {
   const now = Date.now();
   draw(now);
+  if (rh.on) rhythmTick(now);
   const beat = (now / 60000 * (+$('bpm').value)) % 1;
   $('beatLed').className = 'led' + (beat < 0.18 ? ' amber' : '');
   if (dropHeld) {
