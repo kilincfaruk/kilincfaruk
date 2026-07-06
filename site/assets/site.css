@@ -504,6 +504,38 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
 .cert-card .t { display: block; font-family: var(--display); font-size: 1.06rem; line-height: 1.25; color: var(--teal); margin-bottom: .35rem; }
 .cert-card .m { display: block; font-size: .8rem; color: var(--ink-soft); line-height: 1.45; }
 
+/* credentials list (importance-ordered, light bg) */
+.cred-list { list-style: none; margin: 2.4rem 0 0; padding: 0; counter-reset: cr; columns: 2; column-gap: clamp(32px, 5vw, 72px); }
+@media (max-width: 860px) { .cred-list { columns: 1; } }
+.cred-list li { break-inside: avoid; position: relative; padding: 1rem 0 1rem 3.1rem; border-top: 1px solid rgba(28,59,64,.12); }
+.cred-list li::before {
+  counter-increment: cr; content: counter(cr, decimal-leading-zero);
+  position: absolute; left: 0; top: 1.05rem;
+  font-family: var(--display); font-size: .95rem; color: var(--rose-deep); opacity: .9;
+}
+.cred-list .org { display: block; font-weight: 600; color: var(--teal); font-size: .98rem; line-height: 1.4; }
+.cred-list .doc { display: block; font-size: .92rem; color: var(--ink-soft); line-height: 1.5; }
+.cred-list .typ {
+  display: inline-block; font-size: .66rem; text-transform: uppercase; letter-spacing: .12em;
+  font-weight: 600; color: var(--rose-deep);
+  background: color-mix(in srgb, var(--rose) 15%, var(--paper));
+  padding: 2px 9px; border-radius: 999px; margin-left: .55em; vertical-align: 2px;
+}
+
+/* top-3 credentials highlight (dark trainings section) */
+.tr-top3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2.6rem 0 3rem; }
+@media (max-width: 860px) { .tr-top3 { grid-template-columns: 1fr; } }
+.tr-top3 a {
+  display: block; text-decoration: none;
+  border: 1px solid rgba(239,231,218,.16); border-radius: 12px;
+  padding: 1.3rem 1.4rem; background: rgba(239,231,218,.04);
+  transition: background-color .25s, border-color .25s, transform .25s cubic-bezier(.2,.7,.3,1);
+}
+.tr-top3 a:hover { background: rgba(239,231,218,.09); border-color: rgba(239,231,218,.32); transform: translateY(-3px); }
+.tr-top3 .org { display: block; font-size: .76rem; text-transform: uppercase; letter-spacing: .14em; color: var(--rose); font-weight: 600; margin-bottom: .45rem; }
+.tr-top3 .doc { font-family: var(--display); font-size: 1.16rem; color: var(--paper-on-teal); line-height: 1.3; }
+.tr-top3 .meta { display: block; margin-top: .5rem; font-size: .8rem; color: var(--paper-soft); }
+
 /* methods (HYT & MOXO) */
 .methods { background: var(--card); }
 .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 2.6rem; }
