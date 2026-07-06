@@ -1,5 +1,5 @@
 /* ============================================================
-   Güvenli Bağlanma Merkezi — Edanur Dağdeviren
+   Edanur Dağdeviren — Aile, Ergen & Çocuk Danışmanlığı
    Palette, type, and the "bağ ipliği" (bond-thread) system
    ============================================================ */
 
@@ -174,13 +174,10 @@ section { position: relative; }
 .wordmark .logo-mark { height: 46px; width: auto; flex: none; }
 @media (max-width: 600px) {
   .wordmark .logo-mark { height: 40px; }
-  .wordmark .rest { display: none; } /* dar ekranda yalnızca "Güvenli Bağlanma" */
   .nav .wrap { gap: 10px; }
   .nav-cta { gap: 8px; }
 }
 .wordmark b { font-weight: 500; }
-.wordmark .sep { color: var(--sage); font-weight: 400; }
-.wordmark .city { color: var(--ink-soft); font-weight: 400; }
 
 .nav-links { display: flex; align-items: center; gap: clamp(14px, 2vw, 30px); list-style: none; margin: 0; padding: 0; }
 .nav-links a {

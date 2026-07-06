@@ -1,5 +1,5 @@
 /* ============================================================
-   Güvenli Bağlanma Merkezi — interactions
+   Edanur Dağdeviren — site interactions
    ============================================================ */
 
 /* ---- 1. CONFIGURE CONTACT HERE -------------------------------

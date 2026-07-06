@@ -1,4 +1,4 @@
-# Güvenli Bağlanma Merkezi — Yayına Alma (Cloudflare Pages)
+# Edanur Dağdeviren sitesi — Yayına Alma (Cloudflare Pages)
 
 Bu klasör (`site/`) tamamen statik bir sitedir: build adımı yoktur, olduğu gibi
 yayınlanır. `edanurdagdeviren.com` domain'i Cloudflare'de olduğu için en kolay
