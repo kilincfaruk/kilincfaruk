@@ -509,7 +509,6 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
 }
 
 /* compact list row action */
-.cred-list li { padding-right: 4.6rem; }
 .cred-list .see {
   position: absolute; right: 0; top: 50%; transform: translateY(-50%);
   border: 1px solid rgba(28,59,64,.22); background: none; cursor: zoom-in;
@@ -522,7 +521,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
 /* credentials list (importance-ordered, light bg) */
 .cred-list { list-style: none; margin: 2.4rem 0 0; padding: 0; counter-reset: cr; columns: 2; column-gap: clamp(32px, 5vw, 72px); }
 @media (max-width: 860px) { .cred-list { columns: 1; } }
-.cred-list li { break-inside: avoid; position: relative; padding: 1rem 0 1rem 3.1rem; border-top: 1px solid rgba(28,59,64,.12); }
+.cred-list li { break-inside: avoid; position: relative; padding: 1rem 4.8rem 1rem 3.1rem; border-top: 1px solid rgba(28,59,64,.12); }
 .cred-list li::before {
   counter-increment: cr; content: counter(cr, decimal-leading-zero);
   position: absolute; left: 0; top: 1.05rem;
