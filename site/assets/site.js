@@ -8,8 +8,8 @@
 const CONTACT = {
   whatsapp: "905545340114",                        // +90 554 534 01 14
   whatsappText: "Merhaba, danışmanlık hakkında bilgi almak istiyorum.",
-  instagram: "https://www.instagram.com/aile.danismani.16/",
-  instagramHandle: "@aile.danismani.16",
+  instagram: "https://www.instagram.com/ailedanismani_edanurdagdeviren/",
+  instagramHandle: "@ailedanismani_edanurdagdeviren",
 };
 /* ------------------------------------------------------------- */
 
@@ -126,13 +126,21 @@ const CONTACT = {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 })();
 
-/* ---- file:// önizleme: kök-göreli linkleri .html dosyalarına çevir ---- */
+/* ---- file:// önizleme: kök-göreli linkleri, sayfanın derinliğine göre
+   göreli .html yollarına çevir (nav / footer / iç linkler dahil) ---- */
 (function fileProtocolLinks() {
   if (location.protocol !== "file:") return;
+  const icon = document.querySelector('link[rel="icon"]');
+  const iconHref = icon ? icon.getAttribute("href") || "" : "";
+  const prefix = (iconHref.match(/^(\.\.\/)*/) || [""])[0];
   document.querySelectorAll('a[href^="/"]').forEach((a) => {
     const h = a.getAttribute("href");
-    if (h === "/") a.setAttribute("href", "index.html");
-    else if (h.startsWith("/#")) a.setAttribute("href", "index.html" + h.slice(1));
-    else if (h.startsWith("/sertifikalar")) a.setAttribute("href", "sertifikalar.html");
+    let rel = null;
+    if (h === "/") rel = "index.html";
+    else if (h.startsWith("/#")) rel = "index.html" + h.slice(1);
+    else if (h === "/sertifikalar") rel = "sertifikalar.html";
+    else if (h === "/yazilar") rel = "yazilar/index.html";
+    else if (h.startsWith("/yazilar/")) rel = h.slice(1) + "/index.html";
+    if (rel) a.setAttribute("href", prefix + rel);
   });
 })();
