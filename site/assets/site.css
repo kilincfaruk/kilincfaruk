@@ -328,6 +328,7 @@ section { position: relative; }
 .svc .ic svg { width: 24px; height: 24px; }
 .svc h3 { font-size: 1.32rem; color: var(--teal); margin: 0 0 .5rem; }
 .svc p { font-size: .96rem; color: var(--ink-soft); margin: 0; line-height: 1.55; }
+.svc-grid .svc:last-child { grid-column: 1 / -1; } /* 7. kart (MOXO) son satırı doldurur */
 
 /* ============================================================
    Approach (numbered steps with connecting thread)
@@ -361,7 +362,7 @@ section { position: relative; }
 .tr-grid { display: grid; grid-template-columns: 0.7fr 1fr; gap: clamp(36px, 6vw, 80px); margin-top: 2.4rem; }
 @media (max-width: 860px) { .tr-grid { grid-template-columns: 1fr; gap: 40px; } }
 .tr-cats { display: flex; flex-direction: column; gap: 2rem; }
-.tr-cat h4 { font-family: var(--body); text-transform: uppercase; letter-spacing: .18em; font-size: .74rem; font-weight: 600; color: var(--rose); margin: 0 0 1rem; }
+.tr-cat h3 { font-family: var(--body); text-transform: uppercase; letter-spacing: .18em; font-size: .74rem; font-weight: 600; color: var(--rose); margin: 0 0 1rem; }
 .tr-list { list-style: none; margin: 0; padding: 0; counter-reset: tr; }
 .tr-list li {
   position: relative;
@@ -433,7 +434,7 @@ section { position: relative; }
 .footer-mark { width: 86px; height: auto; flex: none; background: var(--paper); padding: 10px; border-radius: 10px; box-shadow: 0 10px 28px -14px rgba(0,0,0,.5); }
 @media (max-width: 720px) { .footer-brand { align-items: center; } }
 .footer p { margin: 0; font-size: .92rem; line-height: 1.6; }
-.footer h5 { font-family: var(--body); text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; color: var(--rose); margin: 0 0 1rem; font-weight: 600; }
+.footer .footer-h { font-family: var(--body); text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; color: var(--rose); margin: 0 0 1rem; font-weight: 600; }
 .footer a { color: var(--paper-soft); text-decoration: none; transition: color .2s; display: inline-flex; align-items: center; gap: .5em; }
 .footer a:hover { color: var(--paper-on-teal); }
 .footer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
@@ -601,3 +602,26 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
   max-width: min(80ch, 86vw);
   background: rgba(20,43,47,.75); padding: 8px 16px; border-radius: 999px;
 }
+
+/* ============================================================
+   FAQ (SSS)
+   ============================================================ */
+.faq { max-width: 780px; }
+.faq details { border-top: 1px solid rgba(28,59,64,.14); }
+.faq details:last-child { border-bottom: 1px solid rgba(28,59,64,.14); }
+.faq summary {
+  cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: 1em;
+  padding: 1.05rem 0;
+  font-family: var(--display); font-size: 1.14rem; line-height: 1.35; color: var(--teal);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; flex: none;
+  font-family: var(--body); font-weight: 600; font-size: 1.35rem;
+  color: var(--rose-deep); transition: transform .25s;
+}
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 0 0 1.25rem; color: var(--ink-soft); font-size: .96rem; line-height: 1.65; max-width: 68ch; }
+.faq details a { color: var(--rose-deep); }
+@media (prefers-reduced-motion: reduce) { .faq summary::after { transition: none; } }

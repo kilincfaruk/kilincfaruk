@@ -125,3 +125,14 @@ const CONTACT = {
   sheet.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 })();
+
+/* ---- file:// önizleme: kök-göreli linkleri .html dosyalarına çevir ---- */
+(function fileProtocolLinks() {
+  if (location.protocol !== "file:") return;
+  document.querySelectorAll('a[href^="/"]').forEach((a) => {
+    const h = a.getAttribute("href");
+    if (h === "/") a.setAttribute("href", "index.html");
+    else if (h.startsWith("/#")) a.setAttribute("href", "index.html" + h.slice(1));
+    else if (h.startsWith("/sertifikalar")) a.setAttribute("href", "sertifikalar.html");
+  });
+})();
