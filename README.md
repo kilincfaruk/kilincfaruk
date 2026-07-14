@@ -42,7 +42,7 @@ TV show and movie tracker, built to replace TV Time. Live and free. Solo project
 ## Other projects
 
 - **[NomadCraftAtelier](https://nomadcraftatelier.com)** — headless e-commerce storefront for a handcrafted jewelry brand. Next.js 14, Shopify Storefront API, Vercel.
-- **Medusa AI tools** — product-image generation tooling for a jewelry brand. fal.ai, Anthropic API.
+- **[Medusa AI tools](https://medusaatelier.com/products/yapay-zeka-ile-ozel-tasarim-kolye)** — product-image generation tooling for a jewelry brand. fal.ai, Anthropic API.
 - **B2B jewelry marketplace** — customers design jewelry with AI, production and fulfillment are handled for them. Next.js 14, Supabase, fal.ai. In development.
 
 Also in development: a travel-planning mobile app (React Native, Supabase) and a restaurant-operations SaaS (Next.js, PWA).
