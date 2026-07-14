@@ -1,40 +1,27 @@
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=25&pause=1000&color=1F4E79&center=true&vCenter=true&width=600&lines=Hey%2C+I'm+Faruk+%F0%9F%91%8B;AI-Augmented+Product+Builder;Turning+Ideas+Into+Shipped+Products" alt="Typing SVG" />
-</p>
+# Faruk Kılınç
 
-<p align="center">
-  <a href="https://www.linkedin.com/in/faruk-kilinc"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
-  <a href="mailto:kilincfaruk2@gmail.com"><img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" /></a>
-  <img src="https://komarev.com/ghpvc/?username=kilincfaruk&style=for-the-badge&color=1F4E79" alt="Profile Views" />
+Computer engineer in Ankara. I design and ship web products end-to-end: product spec, data model, UI, deployment, and the operations work after launch.
+
+I build with AI coding agents (Claude Code), and I'm open about that — the architecture, the product decisions, and the quality bar are mine; the agents just type faster than I do. Anten, below, is what that looks like in practice.
+
+<p>
+  <a href="https://www.linkedin.com/in/faruk-kilinc"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+  <a href="mailto:kilincfaruk2@gmail.com"><img src="https://img.shields.io/badge/Email-EA4335?style=flat-square&logo=gmail&logoColor=white" alt="Email" /></a>
 </p>
 
 ---
 
-### About Me
+## Anten — [anten.watch](https://anten.watch) <img src="https://img.shields.io/badge/live-22C55E?style=flat-square" alt="Live" />
 
-I'm a **Computer Engineer** and **AI-Augmented Product Builder** from Ankara, Turkey. I don't write code line by line — I architect products and build them with AI-assisted workflows. From zero-to-one PRDs to production deployments: strategy, architecture, design systems, and implementation.
+<img src="assets/anten-logo.png" alt="Anten logo" width="72" align="right" />
 
-I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-commerce, and mobile products at indie-hacker speed with production-grade quality.
+TV show and movie tracker, built to replace TV Time. Live and free. Solo project: I wrote the product spec, designed the Postgres schema, built the UI, and run it in production.
 
----
-
-### 📺 Featured — Anten &nbsp;<img src="https://img.shields.io/badge/LIVE-22C55E?style=flat-square" alt="Live" />
-
-<table>
-  <tr>
-    <td width="150" align="center">
-      <a href="https://anten.watch">
-        <img src="assets/anten-logo.png" alt="Anten logo" width="110" />
-      </a>
-    </td>
-    <td>
-      <h4><a href="https://anten.watch">anten.watch</a> — Track every show and movie you watch</h4>
-      <p>TV Time is shutting down; Anten is its production-grade replacement. Track episodes and movies, see what's next on your personal calendar, discover new titles, dig into your watch stats — and import your entire TV Time history in one click. Free to use, live in production, available in English, Turkish and Spanish.</p>
-      <p><code>Next.js 16</code> <code>TypeScript</code> <code>Supabase</code> <code>Tailwind CSS</code> <code>TMDB</code> <code>PWA</code></p>
-      <p><a href="https://anten.watch"><img src="https://img.shields.io/badge/▶_Try_Anten-anten.watch-F0442E?style=for-the-badge" alt="Try Anten at anten.watch" /></a></p>
-    </td>
-  </tr>
-</table>
+- Episode-level tracking, release calendar, discover and recommendations, yearly watch stats
+- One-click import of your full TV Time history
+- English, Turkish and Spanish (next-intl); installable as a PWA
+- Next.js 16 App Router with Server Components, strict TypeScript, Supabase Postgres behind row-level security, Tailwind + shadcn/ui
+- TMDB metadata is synced into Supabase by a rate-limited cron; the app itself never calls TMDB
 
 <p align="center">
   <a href="https://anten.watch"><img src="assets/anten-upcoming.png" alt="Anten — upcoming episodes feed" width="49%" /></a>
@@ -52,102 +39,24 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
 
 ---
 
-### Tech Stack
+## Other projects
 
-<p align="center">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,supabase,vercel,nodejs,expo&perline=8" alt="Core Stack" />
-  </a>
-</p>
+- **[NomadCraftAtelier](https://nomadcraftatelier.com)** — headless e-commerce storefront for a handcrafted jewelry brand. Next.js 14, Shopify Storefront API, Vercel.
+- **Medusa AI tools** — product-image generation tooling for a jewelry brand. fal.ai, Anthropic API.
+- **B2B jewelry marketplace** — customers design jewelry with AI, production and fulfillment are handled for them. Next.js 14, Supabase, fal.ai. In development.
 
-<p align="center">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=js,html,css,java,linux,postgres,git,github&perline=8" alt="More Skills" />
-  </a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Claude_Code-6B4FBB?style=flat-square&logo=anthropic&logoColor=white" />
-  <img src="https://img.shields.io/badge/Shopify-7AB55C?style=flat-square&logo=shopify&logoColor=white" />
-  <img src="https://img.shields.io/badge/fal.ai-000000?style=flat-square&logoColor=white" />
-  <img src="https://img.shields.io/badge/BigQuery-4285F4?style=flat-square&logo=googlebigquery&logoColor=white" />
-  <img src="https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white" />
-  <img src="https://img.shields.io/badge/Jira-0052CC?style=flat-square&logo=jira&logoColor=white" />
-  <img src="https://img.shields.io/badge/Confluence-172B4D?style=flat-square&logo=confluence&logoColor=white" />
-  <img src="https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white" />
-</p>
+Also in development: a travel-planning mobile app (React Native, Supabase) and a restaurant-operations SaaS (Next.js, PWA).
 
 ---
 
-### Experience
+## Background
 
-| Role | Company | Period |
-|------|---------|--------|
-| **AI-Augmented Product Builder** | Freelance / Founder | 2025 – Present |
-| **Business Analyst** | AloTech (Cloud Contact Center SaaS) | 2023 – 2025 |
-| **Intern Engineer** | MAN Türkiye A.Ş. (IT Department) | 2022 |
+| Role | Where | When |
+|------|-------|------|
+| Independent product developer | Self-employed | 2025 – present |
+| Business analyst | AloTech — cloud contact-center SaaS | 2023 – 2025 |
+| IT intern | MAN Türkiye | 2022 |
 
-🎓 **B.Sc. Computer Engineering (English)** — Ankara Yıldırım Beyazıt University
+B.Sc. Computer Engineering (English program), Ankara Yıldırım Beyazıt University.
 
----
-
-### What I've Built
-
-<table>
-  <tr>
-    <td width="50%">
-      <h4>🛍️ NomadCraftAtelier</h4>
-      <p>Headless e-commerce storefront for handcrafted mythological jewelry</p>
-      <p><code>Next.js 14</code> <code>Shopify Storefront API</code> <code>Vercel</code></p>
-    </td>
-    <td width="50%">
-      <h4>🔒 Stealth Project</h4>
-      <p>AI-powered travel planning mobile app — in development</p>
-      <p><code>React Native</code> <code>Next.js</code> <code>Supabase</code> <code>Google Places API</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h4>💎 B2B Jewelry Marketplace</h4>
-      <p>Printify-style platform for jewelry — design with AI, we handle production & fulfillment</p>
-      <p><code>Next.js 14</code> <code>Supabase</code> <code>fal.ai</code> <code>DDD</code></p>
-    </td>
-    <td width="50%">
-      <h4>🔒 Stealth Project</h4>
-      <p>SaaS platform for restaurant operations — in development</p>
-      <p><code>Next.js 14</code> <code>Supabase</code> <code>PWA</code></p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h4>🤖 Medusa AI Tools</h4>
-      <p>AI-powered product image generation tools for a jewelry brand</p>
-      <p><code>fal.ai</code> <code>Anthropic API</code> <code>Prompt Engineering</code></p>
-    </td>
-    <td width="50%">
-      <h4>⚡ More Coming Soon</h4>
-      <p>Always building. Always shipping.</p>
-      <p><code>Next.js</code> <code>Supabase</code> <code>Claude Code</code></p>
-    </td>
-  </tr>
-</table>
-
----
-
-### My Approach
-
-> **1.** Define the problem → PRD, user stories, competitive analysis
->
-> **2.** Design the system → Schema, architecture, design system
->
-> **3.** Build with AI agents → Claude Code multi-agent orchestration
->
-> **4.** Ship fast, iterate → Vercel previews, Supabase migrations
-
-Every project gets a PRD, database schema, design system, and agent configuration before a single component is built.
-
----
-
-<p align="center">
-  <i>"I don't mass-produce code. I architect products and let AI handle the keystrokes."</i>
-</p>
+Day to day: Next.js, React, TypeScript, Tailwind, Supabase/Postgres, Vercel, Claude Code. Shopify Storefront API and fal.ai where the project calls for it.
