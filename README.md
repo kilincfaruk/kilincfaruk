@@ -18,6 +18,40 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
 
 ---
 
+### 📺 Featured — Anten &nbsp;<img src="https://img.shields.io/badge/LIVE-22C55E?style=flat-square" alt="Live" />
+
+<table>
+  <tr>
+    <td width="150" align="center">
+      <a href="https://anten.watch">
+        <img src="assets/anten-logo.png" alt="Anten logo" width="110" />
+      </a>
+    </td>
+    <td>
+      <h4><a href="https://anten.watch">anten.watch</a> — Track every show and movie you watch</h4>
+      <p>TV Time is shutting down; Anten is its production-grade replacement. Track episodes and movies, see what's next on your personal calendar, discover new titles, dig into your watch stats — and import your entire TV Time history in one click. Free to use, live in production, available in English, Turkish and Spanish.</p>
+      <p><code>Next.js 16</code> <code>TypeScript</code> <code>Supabase</code> <code>Tailwind CSS</code> <code>TMDB</code> <code>PWA</code></p>
+      <p><a href="https://anten.watch"><img src="https://img.shields.io/badge/▶_Try_Anten-anten.watch-F0442E?style=for-the-badge" alt="Try Anten at anten.watch" /></a></p>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <a href="https://anten.watch"><img src="assets/anten-upcoming.png" alt="Anten — upcoming episodes feed" width="49%" /></a>
+  <a href="https://anten.watch"><img src="assets/anten-show.png" alt="Anten — show detail with episode tracking" width="49%" /></a>
+</p>
+<p align="center">
+  <a href="https://anten.watch"><img src="assets/anten-stats.png" alt="Anten — yearly watch stats" width="49%" /></a>
+  <a href="https://anten.watch"><img src="assets/anten-calendar.png" alt="Anten — release calendar" width="49%" /></a>
+</p>
+<p align="center">
+  <a href="https://anten.watch"><img src="assets/anten-mobile-home.png" alt="Anten mobile — upcoming" width="24%" /></a>
+  <a href="https://anten.watch"><img src="assets/anten-mobile-show.png" alt="Anten mobile — show detail" width="24%" /></a>
+  <a href="https://anten.watch"><img src="assets/anten-mobile-calendar.png" alt="Anten mobile — calendar" width="24%" /></a>
+</p>
+
+---
+
 ### Tech Stack
 
 <p align="center">
