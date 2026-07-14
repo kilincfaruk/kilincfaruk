@@ -41,7 +41,7 @@ TV show and movie tracker, built to replace TV Time. Live and free. Solo project
 
 ## Other projects
 
-- **NomadCraftAtelier** — headless e-commerce storefront for a handcrafted jewelry brand. Next.js 14, Shopify Storefront API, Vercel.
+- **[NomadCraftAtelier](https://nomadcraftatelier.com)** — headless e-commerce storefront for a handcrafted jewelry brand. Next.js 14, Shopify Storefront API, Vercel.
 - **Medusa AI tools** — product-image generation tooling for a jewelry brand. fal.ai, Anthropic API.
 - **B2B jewelry marketplace** — customers design jewelry with AI, production and fulfillment are handled for them. Next.js 14, Supabase, fal.ai. In development.
 
