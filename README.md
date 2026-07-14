@@ -18,6 +18,26 @@ I pair human product thinking with multi-agent AI orchestration to ship SaaS, e-
 
 ---
 
+### 📺 Featured — Anten &nbsp;<img src="https://img.shields.io/badge/LIVE-22C55E?style=flat-square" alt="Live" />
+
+<table>
+  <tr>
+    <td width="150" align="center">
+      <a href="https://anten-xi.vercel.app">
+        <img src="assets/anten-logo.png" alt="Anten logo" width="110" />
+      </a>
+    </td>
+    <td>
+      <h4><a href="https://anten-xi.vercel.app">Anten</a> — Track every show and movie you watch</h4>
+      <p>TV Time is shutting down; Anten is its production-grade replacement. Track episodes and movies, see what's next on your personal calendar, discover new titles, dig into your watch stats — and import your entire TV Time history in one click. Free to use, live in production, available in English, Turkish and Spanish.</p>
+      <p><code>Next.js 16</code> <code>TypeScript</code> <code>Supabase</code> <code>Tailwind CSS</code> <code>TMDB</code> <code>PWA</code></p>
+      <p><a href="https://anten-xi.vercel.app"><img src="https://img.shields.io/badge/▶_Try_Anten-free-F0442E?style=for-the-badge" alt="Try Anten — free" /></a></p>
+    </td>
+  </tr>
+</table>
+
+---
+
 ### Tech Stack
 
 <p align="center">
